@@ -25,8 +25,8 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2),
-            label: 'Barang',
+            icon: Icon(Icons.restaurant_menu),
+            label: 'barang',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -55,23 +55,14 @@ class _HomePageState extends State<HomePage> {
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () async {
-                final updated = await Navigator.push<bool>(
+                final updated = await Navigator.push<int>(
                   context,
                   MaterialPageRoute(
                     builder: (_) => DetailPage(stationeryItem: item),
                   ),
                 );
-                if (updated == true) {
-                  setState(() {});
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Data barang berhasil diperbarui!'),
-                        backgroundColor: Colors.green,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
+                if (updated != null) {
+                  setState(() => item.stock = updated);
                 }
               },
               child: Padding(
@@ -89,7 +80,7 @@ class _HomePageState extends State<HomePage> {
                           width: 75,
                           height: 75,
                           color: Colors.blue.shade50,
-                          child: const Icon(Icons.menu_book, color: Colors.blue),
+                          child: const Icon(Icons.fastfood, color: Colors.blue),
                         ),
                       ),
                     ),

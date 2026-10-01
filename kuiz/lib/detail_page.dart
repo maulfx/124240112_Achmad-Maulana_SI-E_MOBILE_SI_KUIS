@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'stationery_item.dart';
 
+// Helper function untuk format mata uang Rupiah
 String formatRupiah(int number) {
   return 'Rp ${formatPrice(number)}';
 }
@@ -15,25 +16,40 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
-  late int _quantity;
-  late TextEditingController _controller;
+  // Controller terpisah untuk masing-masing field agar tidak bentrok
+  late TextEditingController _descController;
+  late TextEditingController _stockController;
+  late TextEditingController _priceController;
+
+  // State lokal untuk menyimpan stok dan harga agar perhitungan total langsung reaktif
+  late int _stock;
+  late int _price;
 
   @override
   void initState() {
     super.initState();
-    _quantity = widget.stationeryItem.stock;
-    _controller = TextEditingController(text: _quantity.toString());
+    // Mengisi nilai awal dari data barang yang diklik
+    _stock = widget.stationeryItem.stock;
+    _price = widget.stationeryItem.price;
+
+    _descController = TextEditingController(text: widget.stationeryItem.description);
+    _stockController = TextEditingController(text: _stock.toString());
+    _priceController = TextEditingController(text: _price.toString());
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    // Dispose semua controller untuk mencegah memory leak
+    _descController.dispose();
+    _stockController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final total = _quantity * widget.stationeryItem.price;
+    // Menghitung total nilai stok secara real-time
+    final total = _stock * _price;
 
     return Scaffold(
       appBar: AppBar(
@@ -45,6 +61,7 @@ class _DetailPageState extends State<DetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Gambar barang
             Image.network(
               widget.stationeryItem.imageUrl,
               height: 220,
@@ -54,7 +71,7 @@ class _DetailPageState extends State<DetailPage> {
                 height: 220,
                 color: Colors.blue.shade100,
                 child: const Center(
-                  child: Icon(Icons.fastfood, size: 60, color: Colors.blue),
+                  child: Icon(Icons.menu_book, size: 60, color: Colors.blue),
                 ),
               ),
             ),
@@ -63,6 +80,7 @@ class _DetailPageState extends State<DetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Nama Barang
                   Text(
                     widget.stationeryItem.name,
                     style: const TextStyle(
@@ -71,70 +89,67 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   ),
                   const SizedBox(height: 6),
+
+                  // Harga per pcs (menyesuaikan input harga secara langsung)
                   Text(
-                    '${formatRupiah(widget.stationeryItem.price)} / pcs',
+                    '${formatRupiah(_price)} / pcs',
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.blue,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    widget.stationeryItem.description,
-                    style: const TextStyle(color: Colors.grey, height: 1.4),
-                  ),
                   const SizedBox(height: 20),
+
+                  // Field 1: Input Ubah Deskripsi
                   TextField(
-                    controller: _controller,
-                    keyboardType: TextInputType.text,
+                    controller: _descController,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: 3,
                     decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.menu_book, color: Colors.blue),
+                      prefixIcon: Icon(Icons.description, color: Colors.blue),
                       border: OutlineInputBorder(),
-                      labelText: 'deskripsi',
+                      labelText: 'Deskripsi',
+                      alignLabelWithHint: true,
                     ),
-                    onChanged: (val) {
-                      setState(() {
-                        _quantity = int.tryParse(val) ?? 0;
-                      });
-                    },
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    widget.stationeryItem.description,
-                    style: const TextStyle(color: Colors.grey, height: 1.4),
-                  ),
-                  const SizedBox(height: 20),
+
+                  // Field 2: Input Ubah Stok
                   TextField(
-                    controller: _controller,
+                    controller: _stockController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.menu_book, color: Colors.blue),
+                      prefixIcon: Icon(Icons.inventory, color: Colors.blue),
                       border: OutlineInputBorder(),
-                      labelText: 'stok tersedia',
+                      labelText: 'Stok Tersedia',
                     ),
                     onChanged: (val) {
                       setState(() {
-                        _quantity = int.tryParse(val) ?? 0;
+                        _stock = int.tryParse(val) ?? 0;
                       });
                     },
                   ),
                   const SizedBox(height: 16),
+
+                  // Field 3: Input Ubah Harga per Pieces
                   TextField(
-                    controller: _controller,
+                    controller: _priceController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.menu_book, color: Colors.blue),
+                      prefixIcon: Icon(Icons.monetization_on, color: Colors.blue),
                       border: OutlineInputBorder(),
-                      labelText: 'Harga Barang',
+                      labelText: 'Harga per pcs (Rp)',
                     ),
                     onChanged: (val) {
                       setState(() {
-                        _quantity = int.tryParse(val) ?? 0;
+                        _price = int.tryParse(val) ?? 0;
                       });
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+
+                  // Baris Total Nilai Barang (Stok x Harga)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -156,6 +171,8 @@ class _DetailPageState extends State<DetailPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
+
+                  // Tombol Simpan Perubahan
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -167,13 +184,54 @@ class _DetailPageState extends State<DetailPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      icon: const Icon(Icons.shopping_bag),
+                      icon: const Icon(Icons.save),
                       label: const Text(
                         'Simpan',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       onPressed: () {
-                        Navigator.pop(context, _quantity);
+                        final newDesc = _descController.text.trim();
+                        final newStock = int.tryParse(_stockController.text);
+                        final newPrice = int.tryParse(_priceController.text);
+
+                        // Validasi input
+                        if (newDesc.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Deskripsi tidak boleh kosong!'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (newStock == null || newStock < 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Stok harus berupa angka yang valid (>= 0)!'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (newPrice == null || newPrice < 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Harga harus berupa angka yang valid (>= 0)!'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
+                        // Simpan nilai baru ke objek data stationeryItem
+                        widget.stationeryItem.description = newDesc;
+                        widget.stationeryItem.stock = newStock;
+                        widget.stationeryItem.price = newPrice;
+
+                        // Kembali ke halaman sebelumnya dengan membawa status sukses
+                        Navigator.pop(context, true);
                       },
                     ),
                   ),

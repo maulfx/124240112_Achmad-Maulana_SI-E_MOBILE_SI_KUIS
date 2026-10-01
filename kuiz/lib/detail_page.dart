@@ -87,6 +87,26 @@ class _DetailPageState extends State<DetailPage> {
                   const SizedBox(height: 20),
                   TextField(
                     controller: _controller,
+                    keyboardType: TextInputType.text,
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.menu_book, color: Colors.blue),
+                      border: OutlineInputBorder(),
+                      labelText: 'deskripsi',
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        _quantity = int.tryParse(val) ?? 0;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.stationeryItem.description,
+                    style: const TextStyle(color: Colors.grey, height: 1.4),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _controller,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.menu_book, color: Colors.blue),
